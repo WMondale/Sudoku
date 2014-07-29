@@ -1,16 +1,22 @@
 """
 Sudoko Solver
-July 28, 2014
+July 29, 2014
 Description: Accepts a sudoku puzzle and iteratively adds to it where it is
-certain a number fits in a certain cell.
+certain a number fits in a certain cell.  +If this does not complete the
+puzzle, backtracking is performed until the puzzle has reached a valid solution.
 
-Version note: This first release does not support backtracking, only puzzles
-that can be solved without "guessing and checking" can be solved to completion
-with this program.
+Changelog
++Waits for input to end program, program can now be run with double-clicning
++Added backtracking functionality.
 """
+from copy import deepcopy
 
 #initialize blank 2D 9x9 array
 puzzle=[[0 for x in range(9)] for x in range(9)]
+
+#set up blank variable to "catch" the solution ("straight shot" recursive
+#returns didn't work out)
+sol=[]
 
 def fillPuzzle(puzzle):
 	"""Systematically accepts input from the user to get a puzzle."""
@@ -87,7 +93,40 @@ def certainSolver(puz):
 						changes=True
 	return puz
 
+def backtracker(puz):
+	"""Creates a clone of the inputted puzzle, adds a valid number to each
+	blank space of the clone, and inputs said clone into a recursive call
+	of this function."""
+	global sol #allows function to use this global variable to return
+	clone=deepcopy(puz)
+	clone=certainSolver(clone)
+	#try removing the above from this function and running separately
+	#before running this, I am unsure if repeatedly running this quickens
+	#or slows things
+	done=True
+	for i in range(9):
+		for j in range(9):
+			possible=False
+			if clone[i][j]==0:
+				done=False
+				for k in range(1, 10):
+					if isValid(clone, (i, j), k):
+						possible=True
+						clone[i][j]=k
+						backtracker(clone)
+				if not possible:
+					return
+	if done:
+		sol=clone
+
+			
+
 puzzle=fillPuzzle(puzzle)
-puzzle=certainSolver(puzzle)
-for i in puzzle:
+backtracker(puzzle)
+for i in sol:
 	print(i)
+#puzzle=certainSolver(puzzle)
+#for i in puzzle:
+#	print(i)
+
+input("\nPress Enter to close.")
